@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello reader!</string>
+    <string name="app_name">reader</string>
+    <string name="btn_title_stop">Stop</string>
+    <string name="btn_title_start">Start</string>
+</resources>
