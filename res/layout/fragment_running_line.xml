@@ -5,13 +5,10 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout
-            android:orientation="vertical"
+    <RelativeLayout
             android:layout_width="fill_parent"
-            android:layout_height="10dp"
-            android:focusableInTouchMode="false"
-            android:id="@+id/running_line_content" android:dividerPadding="0dp">
-    </LinearLayout>
+            android:layout_height="fill_parent" android:id="@+id/running_line_content">
+    </RelativeLayout>
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
@@ -32,13 +29,13 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="+"
-                android:id="@+id/button_speed_up"/>
+                android:text="-"
+                android:id="@+id/button_speed_down"/>
         <Button
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="-"
-                android:id="@+id/button_speed_down"/>
+                android:text="+"
+                android:id="@+id/button_speed_up"/>
     </LinearLayout>
 </LinearLayout>

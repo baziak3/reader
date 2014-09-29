@@ -2,7 +2,7 @@ package com.bazavluk.runningline;
 
 import android.content.Context;
 import android.text.Html;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -14,19 +14,21 @@ import java.util.List;
 class SingleLine {
     private String content;
     private TextView textView;
-    private int position;
+    private int xPosition;
+    private int yPosition;
     private int width;
 
     private int currentWordMeta = 0;
     private List<WordMeta> wordMetas = new ArrayList<>();
 
     public SingleLine(Context context, String content) {
-        this(context, content, 0);
+        this(context, content, 0, 0);
     }
 
-    public SingleLine(Context context, String content, int position) {
+    public SingleLine(Context context, String content, int xPosition, int yPosition) {
         this.content = content;
-        this.position = position;
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
 
         prepare(context);
     }
@@ -35,20 +37,28 @@ class SingleLine {
         return textView;
     }
 
-    public int getPosition() {
-        return position;
+    public int getXPosition() {
+        return xPosition;
     }
 
     public int getWidth() {
         return width;
     }
 
-    public void setTextViewPosition(int position) {
-        this.position = position;
+    public void setXPosition(int position) {
+        this.xPosition = position;
+        updatePosition();
+    }
 
-        LinearLayout.LayoutParams mainLineLayoutParams = new LinearLayout.LayoutParams(
-                textView.getLayoutParams().width, LinearLayout.LayoutParams.WRAP_CONTENT);
-        mainLineLayoutParams.setMargins(position, 0, 0, 0);
+    public void setYPosition(int position) {
+        this.yPosition = position;
+        updatePosition();
+    }
+
+    private void updatePosition() {
+        RelativeLayout.LayoutParams mainLineLayoutParams = new RelativeLayout.LayoutParams(
+                textView.getLayoutParams().width, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        mainLineLayoutParams.setMargins(xPosition, yPosition, 0, 0);
         textView.setLayoutParams(mainLineLayoutParams);
     }
 
@@ -63,6 +73,7 @@ class SingleLine {
 
     private void prepare(Context context) {
         textView = new TextView(context);
+        textView.setSingleLine();
 
         String[] parts = content.split("\\s+");
         List<String> words = new ArrayList<>();
@@ -93,6 +104,10 @@ class SingleLine {
                     delay = Delays.SEMI_COLON;
                 } else if (charToTest == '-') {
                     delay = Delays.DASH;
+                } else if (charToTest == '?') {
+                    delay = Delays.QUESTION;
+                } else if (charToTest == '!') {
+                    delay = Delays.EXCLAMATION;
                 }
             }
             wordMetas.add(new WordMeta(word, delay, width, charOffset));
@@ -101,11 +116,11 @@ class SingleLine {
         content = partialContent.toString();
         textView.setText(content);
         width = (int) textView.getPaint().measureText(content);
-        LinearLayout.LayoutParams mainLineLayoutParams =
-                new LinearLayout.LayoutParams(
+        RelativeLayout.LayoutParams mainLineLayoutParams =
+                new RelativeLayout.LayoutParams(
                         width,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        mainLineLayoutParams.setMargins(position, 0, 0, 0);
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+        mainLineLayoutParams.setMargins(xPosition, yPosition, 0, 0);
         textView.setLayoutParams(mainLineLayoutParams);
     }
 

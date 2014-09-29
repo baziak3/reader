@@ -34,13 +34,9 @@ public class RunningLine extends Thread {
     private float delayStep = ((float) MAX_DELAY - MIN_DELAY) / realMaxSpeed;
 
     private int speed = 1;
-    private final Object synchronizeUI = new Object();
+    private int lineHeight;
 
     public void run() {
-
-        // TODO something
-        runningLineContentLayoutParams.height = 100; // mainLine.getLineHeight() * 2 + 6;
-        runningLineContent.setLayoutParams(runningLineContentLayoutParams);
 
         prevLine = new SingleLine(runningLineContent.getContext(), "");
         runningLineContent.addView(prevLine.getTextView());
@@ -48,29 +44,32 @@ public class RunningLine extends Thread {
         mainLine = new SingleLine(runningLineContent.getContext(), book.getNextLine());
         runningLineContent.addView(mainLine.getTextView());
 
+        initializeLineHeight(mainLine.getTextView().getLineHeight());
+
         // TODO something
         contentLeftOffset = getLineWidth() / 2;
 
+        // TODO something
+        runningLineContentLayoutParams.height = getLineHeight() * 2;
+        runningLineContent.setLayoutParams(runningLineContentLayoutParams);
+
+        updateUiSynchronously(new Runnable() {
+            @Override
+            public void run() {
+                prevLine.setYPosition(0);
+                mainLine.setYPosition(getLineHeight());
+            }
+        });
+
         do {
             final WordMeta wm = mainLine.getNextWordMeta();
-
-            synchronized (synchronizeUI) {
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateRunningLineContent(wm);
-                        updateRunningLinePosition();
-                        synchronized (synchronizeUI) {
-                            synchronizeUI.notify();
-                        }
-                    }
-                });
-                try {
-                    synchronizeUI.wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+            updateUiSynchronously(new Runnable() {
+                @Override
+                public void run() {
+                    updateRunningLineContent(wm);
+                    updateRunningLinePosition();
                 }
-            }
+            });
 
             if (wm != null) {
                 // wait for calculated time
@@ -106,6 +105,35 @@ public class RunningLine extends Thread {
         } while (true);
     }
 
+    private void initializeLineHeight(int lineHeight) {
+        this.lineHeight = lineHeight;
+    }
+
+    private int getLineHeight() {
+        return lineHeight;
+    }
+
+    private void updateUiSynchronously(final Runnable runnable) {
+        final Object synchronizeUI = new Object();
+        synchronized (synchronizeUI) {
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    runnable.run();
+                    synchronized (synchronizeUI) {
+                        synchronizeUI.notify();
+                    }
+                }
+            });
+            try {
+                synchronizeUI.wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+    }
+
     private void updateRunningLineContent(WordMeta wm) {
 
         // is it time to move next line to the main position?
@@ -120,10 +148,10 @@ public class RunningLine extends Thread {
             contentLeftOffset = contentLeftOffset + prevLine.getWidth();
 
             prevLine = mainLine;
-            prevLine.setTextViewPosition(0);
+            prevLine.setXPosition(0);
 
             mainLine = nextLine;
-            mainLine.setTextViewPosition(prevLine.getWidth());
+            mainLine.setXPosition(prevLine.getWidth());
 
             nextLine = null;
 
@@ -131,6 +159,9 @@ public class RunningLine extends Thread {
             runningLineContent.addView(mainLine.getTextView());
 
             prevLine.darknessPreviousWords();
+
+            prevLine.setYPosition(0);
+            mainLine.setYPosition(getLineHeight());
 
         } else {
 
@@ -144,7 +175,8 @@ public class RunningLine extends Thread {
             nextLine = new SingleLine(
                     runningLineContent.getContext(),
                     book.getNextLine(),
-                    mainLine.getPosition() + mainLine.getWidth());
+                    mainLine.getXPosition() + mainLine.getWidth(),
+                    getLineHeight() * 2);
             runningLineContent.addView(nextLine.getTextView());
         }
 
