@@ -3,19 +3,23 @@ package com.bazavluk.runningline;
 import android.app.Activity;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import com.bazavluk.R;
 import com.bazavluk.domain.Book;
 import com.bazavluk.services.LookupService;
 import com.bazavluk.ui.ActivityReader;
 
-public class RunningLine extends Thread {
+public class RunningLineThread extends Thread {
     int contentLeftOffset;
 
     Activity mainActivity = LookupService.get(ActivityReader.class);
     Book book = LookupService.get(Book.class);
     private LinearLayout.LayoutParams runningLineContentLayoutParams = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
     ViewGroup runningLineContent = (ViewGroup) mainActivity.findViewById(R.id.running_line_content);
+    TextView speedTextView = (TextView) mainActivity.findViewById(R.id.speed);
+    TextView wordsPerMinuteTextView = (TextView) mainActivity.findViewById(R.id.words_per_minute);
 
     private boolean suspended = true;
     private boolean stopped = false;
@@ -24,17 +28,19 @@ public class RunningLine extends Thread {
     private SingleLine mainLine;
     private SingleLine nextLine;
 
-    private static final int FPS = 25;
-    private static final int MAX_DELAY = 1000;
-    private static final int MIN_DELAY = 100;
-    private static final int MAX_SPEED = 10;
-    private static final double SHARPNESS = 2;
-
+    // movement speed variables and constants
+    private static final int MAX_DELAY = 800;
+    private static final int MIN_DELAY = 50;
+    private static final int MAX_SPEED = 50;
+    private static final double SHARPNESS = 1.1;
     private int realMaxSpeed = (int) Math.pow(SHARPNESS, MAX_SPEED);
     private float delayStep = ((float) MAX_DELAY - MIN_DELAY) / realMaxSpeed;
-
-    private int speed = 1;
+    private int speed = MAX_SPEED / 2;
     private int lineHeight;
+
+    // count speed of reading as words per minutes
+    int wordsSoFar = 0;
+    int millisecondsSoFar = 0;
 
     public void run() {
 
@@ -61,6 +67,7 @@ public class RunningLine extends Thread {
             }
         });
 
+        long startedMilliseconds = System.currentTimeMillis();
         do {
             final WordMeta wm = mainLine.getNextWordMeta();
             updateUiSynchronously(new Runnable() {
@@ -70,6 +77,21 @@ public class RunningLine extends Thread {
                     updateRunningLinePosition();
                 }
             });
+
+            wordsSoFar++;
+            long currentCurrent = System.currentTimeMillis();
+            if (currentCurrent - startedMilliseconds > 3000) { // once per 3 seconds
+                millisecondsSoFar += currentCurrent - startedMilliseconds;
+                startedMilliseconds = currentCurrent;
+                final int passWords = wordsSoFar;
+                final int passSeconds = millisecondsSoFar;
+                mainActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        wordsPerMinuteTextView.setText(String.valueOf((float) passWords * 60000 / passSeconds));
+                    }
+                });
+            }
 
             if (wm != null) {
                 // wait for calculated time
@@ -86,10 +108,14 @@ public class RunningLine extends Thread {
 
                 // wait while suspended
                 try {
-                    synchronized (this) {
-                        while (suspended) {
-                            wait();
+                    if (suspended) {
+                        millisecondsSoFar += System.currentTimeMillis() - startedMilliseconds;
+                        synchronized (this) {
+                            while (suspended) {
+                                wait();
+                            }
                         }
+                        startedMilliseconds = System.currentTimeMillis();
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -206,18 +232,32 @@ public class RunningLine extends Thread {
         stopped = true;
     }
 
-    public synchronized void speedUp() {
+    public synchronized int speedUp() {
         speed++;
         if (speed > MAX_SPEED) {
             speed = MAX_SPEED;
         }
+        updateSpeed();
+        return speed;
     }
 
-    public synchronized void speedDown() {
+    public synchronized int speedDown() {
         speed--;
         if (speed < 1) {
             speed = 1;
         }
+        updateSpeed();
+        return speed;
+    }
+
+    private void updateSpeed() {
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                speedTextView.setText(String.valueOf(RunningLineThread.this.speed));
+            }
+        });
     }
 
 }

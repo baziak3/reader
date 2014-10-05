@@ -1,0 +1,71 @@
+package com.bazavluk.runningline;
+
+import com.bazavluk.services.LookupService;
+
+/**
+ * Created by Папа on 05.10.14.
+ */
+public class JoystickThread extends Thread {
+    private boolean suspended = true;
+    private boolean stopped = false;
+    private int joystickY;
+
+    public void run() {
+        do {
+
+            if (joystickY < 0) {
+                LookupService.get(RunningLineThread.class).speedUp();
+            } else {
+                LookupService.get(RunningLineThread.class).speedDown();
+            }
+
+            // wait for calculated time
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // wait while suspended
+            try {
+                synchronized (this) {
+                    while (suspended) {
+                        wait();
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // break if stopped
+            synchronized (this) {
+                if (stopped) {
+                    break;
+                }
+            }
+        } while (true);
+    }
+
+    public void suspendThread() {
+        suspended = true;
+    }
+
+    public void resumeThread() {
+        synchronized (this) {
+            suspended = false;
+            notify();
+        }
+    }
+
+    public synchronized void stopThread() {
+        stopped = true;
+    }
+
+    public void setJoystickY(int joystickY) {
+        this.joystickY = joystickY;
+    }
+
+    public int getJoystickY() {
+        return joystickY;
+    }
+}

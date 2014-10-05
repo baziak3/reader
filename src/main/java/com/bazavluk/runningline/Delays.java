@@ -5,13 +5,13 @@ package com.bazavluk.runningline;
 */
 enum Delays {
     NO(1),
-    COMMA(2),
-    DOT(3),
-    DASH(2),
-    COLON(2),
-    SEMI_COLON(2),
-    QUESTION(3),
-    EXCLAMATION(3);
+    COMMA(1.5),
+    DOT(2),
+    DASH(1.5),
+    COLON(1.5),
+    SEMI_COLON(1.5),
+    QUESTION(2),
+    EXCLAMATION(2);
 
     private double coefficient;
 

@@ -5,7 +5,7 @@
     android:layout_height="fill_parent"
     >
     <fragment android:layout_width="fill_parent"
-              android:layout_height="300dp"
+              android:layout_height="50dp"
               android:name="com.bazavluk.ui.FragmentContent"
               android:id="@+id/fragment_content"
               android:layout_gravity="center_horizontal"

@@ -38,4 +38,46 @@
                 android:text="+"
                 android:id="@+id/button_speed_up"/>
     </LinearLayout>
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:id="@+id/speed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Speed"
+                android:textColor="#444444"
+                android:textSize="20dp" />
+        <TextView
+                android:id="@+id/words_per_minute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Words per minute"
+                android:textColor="#444444"
+                android:textSize="20dp" />
+        <TextView
+                android:id="@+id/get_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="X"
+                android:textColor="#444444"
+                android:textSize="20dp" />
+        <TextView
+                android:id="@+id/get_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Y"
+                android:textColor="#444444"
+                android:textSize="20dp" />
+    </LinearLayout>
+    <RelativeLayout
+            android:id="@+id/layout_joystick"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="36dp"
+            android:background="@drawable/image_button_bg" >
+    </RelativeLayout>
 </LinearLayout>

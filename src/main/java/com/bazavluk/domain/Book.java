@@ -1,10 +1,18 @@
 package com.bazavluk.domain;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Book {
     List<String> lines = new ArrayList<>();
+    /*
     {
         lines.add("-Приветствую вас, Главный Мастер. Я приношу свои извинения за мой внезапный визит, но дело не терпит отлагательства.");
         lines.add("-Здравствуйте, Мастер Гордон. Проходите, присаживайтесь. И вы очень обяжете меня, если оставите свою церемонность за порогом этой комнаты. Как член Коллегии Мастеров, вы вправе беспокоить меня в любой час дня и ночи. К тому же вы выполняете ответственное поручение... Полагаю, именно это привело вас ко мне? Какие-то проблемы с вашей подопечной?");
@@ -17,8 +25,28 @@ public class Book {
         lines.add("-Я не об этом, Главный... гм, простите, что перебиваю вас. Вы что-нибудь слышали о Конноре МакКое?");
         lines.add("-О котором из них? В наших хрониках упоминается несколько человек с таким именем.");
     }
+    */
     int currentLine = 0;
 
+    public Book(Context context) {
+        AssetManager am = context.getAssets();
+        try {
+            InputStream is = am.open("book.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while((line = reader.readLine()) != null) {
+                line = line.trim();
+                line = line.replace('—', '-');
+                line = line.replaceAll("^-\\s*", "-");
+                if (!line.equals("")) {
+                    lines.add(line);
+                }
+            }
+        } catch (IOException e) {
+            // TODO
+            e.printStackTrace();
+        }
+    }
     /**
      * @return Well formatted string (no bad chars, no space before "," or "." etc.)
      */
