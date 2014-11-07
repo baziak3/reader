@@ -1,9 +1,10 @@
 package com.bazavluk.runningline;
 
 /**
-* Created by Папа on 29.09.14.
+* Describes delays' coefficients
 */
 enum Delays {
+    NEW_LINE(2),
     NO(1),
     COMMA(1.5),
     DOT(2),

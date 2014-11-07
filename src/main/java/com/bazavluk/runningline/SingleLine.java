@@ -71,6 +71,15 @@ class SingleLine {
         }
     }
 
+    public WordMeta getPreviousWordMeta() {
+        if (currentWordMeta >=0) {
+            return wordMetas.get(currentWordMeta--);
+        } else {
+            // currentWordMeta--;
+            return null;
+        }
+    }
+
     private void prepare(Context context) {
         textView = new TextView(context);
         textView.setSingleLine();
@@ -94,7 +103,9 @@ class SingleLine {
             Delays delay = Delays.NO;
             if (word.length() > 1) {
                 char charToTest = word.charAt(word.length() - 2);
-                if (charToTest == ',') {
+                if (wordMetas.size() == 0) {
+                    delay = Delays.NEW_LINE;
+                } else if (charToTest == ',') {
                     delay = Delays.COMMA;
                 } else if (charToTest == '.') {
                     delay = Delays.DOT;
@@ -124,10 +135,13 @@ class SingleLine {
         textView.setLayoutParams(mainLineLayoutParams);
     }
 
-    public void darknessPreviousWords() {
+    /**
+     * Highlight the word before the one, pointed by currentWordMeta
+     */
+    public void shadowInactiveWords() {
         StringBuilder highlighted = new StringBuilder();
 
-        if (currentWordMeta - 1 == wordMetas.size()) {
+        if (currentWordMeta == 0 || currentWordMeta > wordMetas.size()) {
             highlighted.append("<font color=\"#333333\">");
             highlighted.append(content);
             highlighted.append("</font>");
@@ -148,5 +162,4 @@ class SingleLine {
     public int wordsLeft() {
         return wordMetas.size() - currentWordMeta;
     }
-
 }

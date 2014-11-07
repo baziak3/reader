@@ -7,7 +7,11 @@ public class LookupService {
     private static Map<Class, Object> objects = new HashMap<>();
 
     public static void register(Object o) {
-        objects.put(o.getClass(), o);
+        register(o, o.getClass());
+    }
+
+    public static void register(Object o, Class clazz) {
+        objects.put(clazz, o);
     }
 
     @SuppressWarnings("unchecked")

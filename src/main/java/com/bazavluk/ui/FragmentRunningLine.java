@@ -12,7 +12,7 @@ import android.widget.TextView;
 import com.bazavluk.R;
 import com.bazavluk.runningline.JoystickController;
 import com.bazavluk.runningline.JoystickThread;
-import com.bazavluk.runningline.RunningLineThread;
+import com.bazavluk.runningline.RunningTextThread;
 import com.bazavluk.services.LookupService;
 
 public class FragmentRunningLine extends Fragment {
@@ -92,18 +92,18 @@ public class FragmentRunningLine extends Fragment {
     }
 
     private void stopRunningLine() {
-        LookupService.get(RunningLineThread.class).suspendThread();
+        LookupService.get(RunningTextThread.class).suspendThread();
     }
 
     private void startRunningLine() {
-        LookupService.get(RunningLineThread.class).resumeThread();
+        LookupService.get(RunningTextThread.class).resumeThread();
     }
 
     private int speedUpRunningLine() {
-        return LookupService.get(RunningLineThread.class).speedUp();
+        return LookupService.get(RunningTextThread.class).speedUp();
     }
 
     private int speedDownRunningLine() {
-        return LookupService.get(RunningLineThread.class).speedDown();
+        return LookupService.get(RunningTextThread.class).speedDown();
     }
 }

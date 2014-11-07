@@ -5,15 +5,15 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.bazavluk.R;
-import com.bazavluk.domain.Book;
+import com.bazavluk.domain.Lines;
 import com.bazavluk.services.LookupService;
 import com.bazavluk.ui.ActivityReader;
 
-public class RunningLineThread extends Thread {
+public class RunningTextThread extends Thread {
     int contentLeftOffset;
 
     Activity mainActivity = LookupService.get(ActivityReader.class);
-    Book book = LookupService.get(Book.class);
+    Lines book = LookupService.get(Lines.class);
     private LinearLayout.LayoutParams runningLineContentLayoutParams = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
@@ -37,6 +37,8 @@ public class RunningLineThread extends Thread {
     private float delayStep = ((float) MAX_DELAY - MIN_DELAY) / realMaxSpeed;
     private int speed = MAX_SPEED / 2;
     private int lineHeight;
+
+    private Directions direction = Directions.FORWARD;
 
     // count speed of reading as words per minutes
     int wordsSoFar = 0;
@@ -69,7 +71,12 @@ public class RunningLineThread extends Thread {
 
         long startedMilliseconds = System.currentTimeMillis();
         do {
-            final WordMeta wm = mainLine.getNextWordMeta();
+            final WordMeta wm;
+            if (direction == Directions.FORWARD) {
+                wm = mainLine.getNextWordMeta();
+            } else {
+                wm = mainLine.getPreviousWordMeta();
+            }
             updateUiSynchronously(new Runnable() {
                 @Override
                 public void run() {
@@ -78,6 +85,7 @@ public class RunningLineThread extends Thread {
                 }
             });
 
+            // update reading speed information
             wordsSoFar++;
             long currentCurrent = System.currentTimeMillis();
             if (currentCurrent - startedMilliseconds > 3000) { // once per 3 seconds
@@ -162,8 +170,9 @@ public class RunningLineThread extends Thread {
 
     private void updateRunningLineContent(WordMeta wm) {
 
-        // is it time to move next line to the main position?
         if (wm == null) {
+
+            // it is time to move next line to the main position
 
             runningLineContent.removeView(prevLine.getTextView());
             runningLineContent.removeView(mainLine.getTextView());
@@ -184,20 +193,24 @@ public class RunningLineThread extends Thread {
             runningLineContent.addView(prevLine.getTextView());
             runningLineContent.addView(mainLine.getTextView());
 
-            prevLine.darknessPreviousWords();
+            prevLine.shadowInactiveWords();
 
             prevLine.setYPosition(0);
             mainLine.setYPosition(getLineHeight());
 
+            mainLine.shadowInactiveWords();
+
         } else {
 
             contentLeftOffset = getLineWidth() / 2 - prevLine.getWidth() - wm.getCoordinateOffset();
-            mainLine.darknessPreviousWords();
+            mainLine.shadowInactiveWords();
 
         }
 
-        // is it time to create next line?
         if (nextLine == null && mainLine.wordsLeft() < 2) {
+
+            // it is time to create next line
+
             nextLine = new SingleLine(
                     runningLineContent.getContext(),
                     book.getNextLine(),
@@ -255,9 +268,13 @@ public class RunningLineThread extends Thread {
             @Override
             public void run() {
 
-                speedTextView.setText(String.valueOf(RunningLineThread.this.speed));
+                speedTextView.setText(String.valueOf(RunningTextThread.this.speed));
             }
         });
     }
 
+    private enum Directions {
+        FORWARD,
+        BACKWARD
+    }
 }

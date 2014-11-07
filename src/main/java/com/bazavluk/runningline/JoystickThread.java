@@ -14,9 +14,9 @@ public class JoystickThread extends Thread {
         do {
 
             if (joystickY < 0) {
-                LookupService.get(RunningLineThread.class).speedUp();
+                LookupService.get(RunningTextThread.class).speedUp();
             } else {
-                LookupService.get(RunningLineThread.class).speedDown();
+                LookupService.get(RunningTextThread.class).speedDown();
             }
 
             // wait for calculated time
