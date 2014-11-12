@@ -19,7 +19,7 @@ class SingleLine {
     private int width;
 
     private int currentWordMeta = 0;
-    private List<WordMeta> wordMetas = new ArrayList<>();
+    private List<TextViewWrapper.WordMeta> wordMetas = new ArrayList<>();
 
     public SingleLine(Context context, String content) {
         this(context, content, 0, 0);
@@ -62,7 +62,7 @@ class SingleLine {
         textView.setLayoutParams(mainLineLayoutParams);
     }
 
-    public WordMeta getNextWordMeta() {
+    public TextViewWrapper.WordMeta getNextWordMeta() {
         if (currentWordMeta < wordMetas.size()) {
             return wordMetas.get(currentWordMeta++);
         } else {
@@ -71,11 +71,11 @@ class SingleLine {
         }
     }
 
-    public WordMeta getPreviousWordMeta() {
+    public TextViewWrapper.WordMeta getPreviousWordMeta() {
         if (currentWordMeta >=0) {
             return wordMetas.get(currentWordMeta--);
         } else {
-            // currentWordMeta--;
+            currentWordMeta--;
             return null;
         }
     }
@@ -121,7 +121,7 @@ class SingleLine {
                     delay = Delays.EXCLAMATION;
                 }
             }
-            wordMetas.add(new WordMeta(word, delay, width, charOffset));
+            wordMetas.add(new TextViewWrapper.WordMeta(word, delay, width, charOffset));
             charOffset += word.length();
         }
         content = partialContent.toString();
@@ -146,7 +146,7 @@ class SingleLine {
             highlighted.append(content);
             highlighted.append("</font>");
         } else {
-            WordMeta wm = wordMetas.get(currentWordMeta - 1);
+            TextViewWrapper.WordMeta wm = wordMetas.get(currentWordMeta - 1);
             highlighted.append("<font color=\"#333333\">");
             highlighted.append(content.substring(0, wm.getCharOffset()));
             highlighted.append("</font><font color=\"#FFFFFF\">");

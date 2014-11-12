@@ -11,11 +11,12 @@ public class JoystickThread extends Thread {
     private int joystickY;
 
     public void run() {
+        LookupService.get(RunningTextThread.class).updateSpeed();
         do {
 
             if (joystickY < 0) {
                 LookupService.get(RunningTextThread.class).speedUp();
-            } else {
+            } else if (joystickY > 0) {
                 LookupService.get(RunningTextThread.class).speedDown();
             }
 

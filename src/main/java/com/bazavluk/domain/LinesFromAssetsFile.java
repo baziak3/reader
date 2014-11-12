@@ -14,8 +14,9 @@ import java.util.List;
  *
  */
 public class LinesFromAssetsFile implements Lines {
-    List<String> lines = new ArrayList<>();
+    List<List<String>> lines = new ArrayList<>();
     int currentLine = 0;
+    int currentWord = 0;
 
     public LinesFromAssetsFile(Context context) {
         AssetManager am = context.getAssets();
@@ -24,28 +25,67 @@ public class LinesFromAssetsFile implements Lines {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line;
             while((line = reader.readLine()) != null) {
+                // prepare string (no bad chars, no space before "," or "." etc.)
                 line = line.trim();
                 line = line.replaceAll("—", "-");
                 line = line.replaceAll("^-\\s*", "-");
-                if (!line.equals("")) {
-                    lines.add(line);
+
+                String[] parts = line.split("\\s+");
+                List<String> words = new ArrayList<>();
+                for (String part: parts) {
+                    if (part.equals("-")) {
+                        words.set(
+                                words.size() - 1,
+                                words.get(words.size() - 1) + "-");
+                    } else {
+                        words.add(part);
+                    }
                 }
+                lines.add(words);
             }
         } catch (IOException e) {
             // TODO
             e.printStackTrace();
         }
     }
-    /**
-     * @return Well formatted string (no bad chars, no space before "," or "." etc.)
-     */
+
     @Override
-    public String getNextLine() {
-        String res = lines.get(currentLine);
-        currentLine++;
-        if (currentLine >= lines.size()) {
-            currentLine = 0;
+    public List<String> getPreviousLineWords() {
+        if (currentLine == 0) {
+            return new ArrayList<>();
+        } else {
+            return lines.get(currentLine - 1);
         }
-        return res;
+    }
+
+    @Override
+    public List<String> getCurrentLineWords() {
+        return lines.get(currentLine);
+    }
+
+    @Override
+    public List<String> getNextLineWords() {
+        if (currentLine < lines.size() - 1) {
+            return lines.get(currentLine + 1);
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public int getCurrentWord() {
+        return currentWord;
+    }
+
+    @Override
+    public void increaseCurrentWord() {
+        if (lines.get(currentLine).size() == currentWord + 1) {
+            if (lines.size() > currentLine + 1) {
+                currentLine++;
+                currentWord = 0;
+            }
+        } else {
+            currentWord++;
+        }
     }
 }
