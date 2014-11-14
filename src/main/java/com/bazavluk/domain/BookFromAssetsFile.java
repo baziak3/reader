@@ -13,15 +13,16 @@ import java.util.List;
 /**
  *
  */
-public class LinesFromAssetsFile implements Lines {
+public class BookFromAssetsFile implements Book {
     List<List<String>> lines = new ArrayList<>();
-    int currentLine = 0;
+    int currentLine = 10;
     int currentWord = 0;
 
-    public LinesFromAssetsFile(Context context) {
+    public BookFromAssetsFile(Context context) {
         AssetManager am = context.getAssets();
         try {
-            InputStream is = am.open("book.txt");
+            // InputStream is = am.open("book.txt");
+            InputStream is = am.open("t.txt");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line;
             while((line = reader.readLine()) != null) {
@@ -78,14 +79,44 @@ public class LinesFromAssetsFile implements Lines {
     }
 
     @Override
-    public void increaseCurrentWord() {
+    public boolean increaseCurrentWord() {
         if (lines.get(currentLine).size() == currentWord + 1) {
             if (lines.size() > currentLine + 1) {
                 currentLine++;
                 currentWord = 0;
+                return true;
+            } else {
+                return false;
             }
         } else {
             currentWord++;
+            return true;
         }
+    }
+
+    @Override
+    public boolean decreaseCurrentWord() {
+        if (currentWord > 0) {
+            currentWord--;
+            return true;
+        } else {
+            if (currentLine > 0) {
+                currentLine--;
+                currentWord = lines.get(currentLine).size() - 1;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    @Override
+    public boolean isFirstWordInLine() {
+        return currentWord == 0;
+    }
+
+    @Override
+    public boolean isLastWordInLine() {
+        return currentWord == lines.get(currentLine).size() - 1;
     }
 }

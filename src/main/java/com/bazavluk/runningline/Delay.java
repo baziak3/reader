@@ -3,7 +3,7 @@ package com.bazavluk.runningline;
 /**
 * Describes delays' coefficients
 */
-enum Delays {
+enum Delay {
     NEW_LINE(2),
     NO(1),
     COMMA(1.5),
@@ -16,11 +16,12 @@ enum Delays {
 
     private double coefficient;
 
-    private Delays(double value) {
+    private Delay(double value) {
         coefficient = value;
     }
 
     public double coefficient() {
+        // return coefficient > 1 ? coefficient * 3: coefficient;
         return coefficient;
     }
 }

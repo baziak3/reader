@@ -1,8 +1,11 @@
 package com.bazavluk.runningline;
 
 import android.content.Context;
+import android.text.Html;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import com.bazavluk.configuration.Configuration;
+import com.bazavluk.services.LookupService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +17,9 @@ public class TextViewWrapper {
     private TextView textView;
     private List<WordMeta> wordMetas;
     private Context context;
+    private String content;
     private int width;
+    private Configuration configuration = LookupService.get(Configuration.class);
 
     public TextViewWrapper(Context context) {
         this.context = context;
@@ -22,11 +27,12 @@ public class TextViewWrapper {
         textView.setSingleLine();
     }
 
-    public void updatePosition(int xPosition, int yPosition) {
+    public TextViewWrapper updatePosition(int xPosition, int yPosition) {
         RelativeLayout.LayoutParams mainLineLayoutParams = new RelativeLayout.LayoutParams(
                 textView.getLayoutParams().width, RelativeLayout.LayoutParams.WRAP_CONTENT);
         mainLineLayoutParams.setMargins(xPosition, yPosition, 0, 0);
         textView.setLayoutParams(mainLineLayoutParams);
+        return this;
     }
 
     public void setWords(List<String> words) {
@@ -35,31 +41,32 @@ public class TextViewWrapper {
         for (String word: words) {
             int offset = (int) textView.getPaint().measureText(partialContent.toString());
             int charOffset = partialContent.length();
-            Delays delay = Delays.NO;
+            Delay delay = Delay.NO;
             if (word.length() > 1) {
-                char charToTest = word.charAt(word.length() - 2);
+                char charToTest = word.charAt(word.length() - 1);
                 if (wordMetas.size() == 0) {
-                    delay = Delays.NEW_LINE;
+                    delay = Delay.NEW_LINE;
                 } else if (charToTest == ',') {
-                    delay = Delays.COMMA;
+                    delay = Delay.COMMA;
                 } else if (charToTest == '.') {
-                    delay = Delays.DOT;
+                    delay = Delay.DOT;
                 } else if (charToTest == ':') {
-                    delay = Delays.COLON;
+                    delay = Delay.COLON;
                 } else if (charToTest == ';') {
-                    delay = Delays.SEMI_COLON;
+                    delay = Delay.SEMI_COLON;
                 } else if (charToTest == '-') {
-                    delay = Delays.DASH;
+                    delay = Delay.DASH;
                 } else if (charToTest == '?') {
-                    delay = Delays.QUESTION;
+                    delay = Delay.QUESTION;
                 } else if (charToTest == '!') {
-                    delay = Delays.EXCLAMATION;
+                    delay = Delay.EXCLAMATION;
                 }
             }
             wordMetas.add(new WordMeta(word, delay, offset, charOffset));
 
             partialContent.append(word).append(" ");
         }
+        content = partialContent.toString();
         textView.setText(partialContent);
         this.width = (int) textView.getPaint().measureText(partialContent.toString());
         RelativeLayout.LayoutParams mainLineLayoutParams =
@@ -78,8 +85,36 @@ public class TextViewWrapper {
         return textView;
     }
 
-    public int getWordOffset(int currentWordIndex) {
-        return wordMetas.get(currentWordIndex).getOffset();
+    public int getWordOffset(int wordIndex) {
+        return wordMetas.get(wordIndex).getOffset();
+    }
+
+    public Delay getWordDelay(int wordIndex) {
+        return wordMetas.get(wordIndex).getDelay();
+    }
+
+    public TextViewWrapper shadowPreviousLine() {
+        textView.setText(Html.fromHtml("<font color=\"" + configuration.getPreviousLineColor() + "\">" + content + "</font>"));
+        return this;
+    }
+
+    public TextViewWrapper shadowCurrentLine(int currentWord) {
+        TextViewWrapper.WordMeta wm = wordMetas.get(currentWord);
+        textView.setText(Html.fromHtml(("<font color=\"" + configuration.getCurrentLineColor() + "\">")
+                + content.substring(0, wm.getCharOffset())
+                + "</font>"
+                + "<font color=\"" + configuration.getCurrentWordColor() + "\">"
+                + content.substring(wm.getCharOffset(), wm.getCharOffset() + wm.getWord().length())
+                + "</font>"
+                + "<font color=\"" + configuration.getCurrentLineColor() + "\">"
+                + content.substring(wm.getCharOffset() + wm.getWord().length())
+                + "</font>"));
+        return this;
+    }
+
+    public TextViewWrapper shadowNextLine() {
+        textView.setText(Html.fromHtml("<font color=\"" + configuration.getNextLineColor() + "\">" + content + "</font>"));
+        return this;
     }
 
     /**
@@ -87,11 +122,11 @@ public class TextViewWrapper {
     */
     static class WordMeta {
         private String word;
-        private Delays delay;
+        private Delay delay;
         private int offset;
         private int charOffset;
 
-        public WordMeta(String word, Delays delay, int offset, int charOffset) {
+        public WordMeta(String word, Delay delay, int offset, int charOffset) {
             this.word = word;
             this.delay = delay;
             this.offset = offset;
@@ -102,7 +137,7 @@ public class TextViewWrapper {
             return word;
         }
 
-        public Delays getDelay() {
+        public Delay getDelay() {
             return delay;
         }
 

@@ -3,10 +3,12 @@ package com.bazavluk.ui;
 import android.app.Activity;
 import android.os.Bundle;
 import com.bazavluk.R;
-import com.bazavluk.domain.Lines;
+import com.bazavluk.configuration.Configuration;
+import com.bazavluk.configuration.ConfigurationHardcode;
+import com.bazavluk.domain.Book;
 import com.bazavluk.runningline.JoystickThread;
 import com.bazavluk.runningline.RunningTextThread;
-import com.bazavluk.domain.LinesFromAssetsFile;
+import com.bazavluk.domain.BookFromAssetsFile;
 import com.bazavluk.services.LookupService;
 
 public class ActivityReader extends Activity {
@@ -17,8 +19,11 @@ public class ActivityReader extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         LookupService.register(this);
         LookupService.register(
-                new LinesFromAssetsFile(getApplicationContext()),
-                Lines.class);
+                new BookFromAssetsFile(getApplicationContext()),
+                Book.class);
+        LookupService.register(
+                new ConfigurationHardcode(),
+                Configuration.class);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reader);
