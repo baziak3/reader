@@ -1,0 +1,4 @@
+- create common interface for all controls
+    - reset()
+- create controls manager
+- manage speed only from the controllers

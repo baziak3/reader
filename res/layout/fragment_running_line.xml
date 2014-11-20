@@ -80,4 +80,10 @@
             android:layout_marginRight="36dp"
             android:background="@drawable/image_button_bg" >
     </RelativeLayout>
+    <RelativeLayout
+            android:id="@+id/layout_swiper"
+            android:layout_height="50dp"
+            android:layout_width="fill_parent"
+            android:background="#ffffff" >
+    </RelativeLayout>
 </LinearLayout>

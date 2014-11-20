@@ -1,4 +1,4 @@
-package com.bazavluk.runningline;
+package com.bazavluk.runningline.controls.joystick;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -9,6 +9,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.TextView;
+import com.bazavluk.R;
+import com.bazavluk.runningline.RunningTextThread;
+import com.bazavluk.services.LookupService;
 
 public class JoystickController {
     public static final int STICK_NONE = 0;
@@ -39,10 +43,19 @@ public class JoystickController {
 
     private boolean touch_state = false;
 
-    public JoystickController(Context context, ViewGroup layout, int stick_res_id) {
-        mContext = context;
+    public JoystickController(ViewGroup view, int stick_res_id) {
 
-        stick = BitmapFactory.decodeResource(mContext.getResources(),
+        // TODO: remove
+        ViewGroup parent = (ViewGroup) view.getParent();
+
+        final TextView getX = (TextView) parent.findViewById(R.id.get_x);
+        final TextView getY = (TextView) parent.findViewById(R.id.get_y);
+        // EOF remove
+
+        mContext = view.getContext();
+
+        stick = BitmapFactory.decodeResource(
+                mContext.getResources(),
                 stick_res_id);
 
         stick_width = stick.getWidth();
@@ -50,8 +63,47 @@ public class JoystickController {
 
         draw = new DrawCanvas(mContext);
         paint = new Paint();
-        mLayout = layout;
+        mLayout = view;
         params = mLayout.getLayoutParams();
+
+        this.setStickSize(20, 20);
+        this.setLayoutSize(200, 200);
+//        this.setLayoutAlpha(150);
+//        this.setStickAlpha(100);
+        this.setOffset(50);
+        this.setMinimumDistance(50);
+        view.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View arg0, MotionEvent arg1) {
+                JoystickController.this.drawStick(arg1);
+
+                // TODO: remove
+                getX.setText(String.valueOf(JoystickController.this.getX()));
+                getY.setText(String.valueOf(JoystickController.this.getY()));
+                // EOF remove
+
+                if (JoystickController.this.isInTouchState()) {
+                    startRunningLine();
+                } else {
+                    stopRunningLine();
+                }
+
+                if (JoystickController.this.getY() == 0) {
+                    LookupService.get(JoystickThread.class).suspendThread();
+                } else {
+                    LookupService.get(JoystickThread.class).setJoystickY(JoystickController.this.getY());
+                    LookupService.get(JoystickThread.class).resumeThread();
+                }
+                return true;
+            }
+        });
+    }
+
+    private void stopRunningLine() {
+        LookupService.get(RunningTextThread.class).suspendThread();
+    }
+
+    private void startRunningLine() {
+        LookupService.get(RunningTextThread.class).resumeThread();
     }
 
     public void drawStick(MotionEvent arg1) {
@@ -254,24 +306,24 @@ public class JoystickController {
     private void draw() {
         try {
             mLayout.removeView(draw);
-        } catch (Exception e) { }
+        } catch (Exception ignored) { }
         mLayout.addView(draw);
     }
 
-    private class DrawCanvas extends View{
+    private class DrawCanvas extends View {
         float x, y;
 
         private DrawCanvas(Context mContext) {
-             super(mContext);
-         }
+            super(mContext);
+        }
 
-         public void onDraw(Canvas canvas) {
-             canvas.drawBitmap(stick, x, y, paint);
-         }
+        public void onDraw(Canvas canvas) {
+            canvas.drawBitmap(stick, x, y, paint);
+        }
 
-         private void position(float pos_x, float pos_y) {
+        private void position(float pos_x, float pos_y) {
             x = pos_x - (stick_width / 2);
             y = pos_y - (stick_height / 2);
-         }
-     }
+        }
+    }
 }

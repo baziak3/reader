@@ -21,8 +21,8 @@ public class BookFromAssetsFile implements Book {
     public BookFromAssetsFile(Context context) {
         AssetManager am = context.getAssets();
         try {
-            // InputStream is = am.open("book.txt");
-            InputStream is = am.open("t.txt");
+            InputStream is = am.open("book.txt");
+            // InputStream is = am.open("t.txt");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line;
             while((line = reader.readLine()) != null) {

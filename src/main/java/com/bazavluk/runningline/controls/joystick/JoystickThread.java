@@ -1,5 +1,6 @@
-package com.bazavluk.runningline;
+package com.bazavluk.runningline.controls.joystick;
 
+import com.bazavluk.runningline.RunningTextThread;
 import com.bazavluk.services.LookupService;
 
 /**

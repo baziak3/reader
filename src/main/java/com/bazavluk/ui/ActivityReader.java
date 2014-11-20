@@ -6,7 +6,7 @@ import com.bazavluk.R;
 import com.bazavluk.configuration.Configuration;
 import com.bazavluk.configuration.ConfigurationHardcode;
 import com.bazavluk.domain.Book;
-import com.bazavluk.runningline.JoystickThread;
+import com.bazavluk.runningline.controls.joystick.JoystickThread;
 import com.bazavluk.runningline.RunningTextThread;
 import com.bazavluk.domain.BookFromAssetsFile;
 import com.bazavluk.services.LookupService;
