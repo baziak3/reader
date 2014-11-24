@@ -1,8 +1,5 @@
-package com.bazavluk.runningline;
+package com.bazavluk.runningline.controls.speed;
 
-/**
- * Created by Baziak on 11/11/2014.
- */
 public class ReadingSpeedObserver {
     private int wordsSoFar = 0;
     private int millisecondsSoFar = 0;

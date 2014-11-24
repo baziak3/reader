@@ -1,4 +1,4 @@
-package com.bazavluk.domain;
+package com.bazavluk.datasource;
 
 import java.util.List;
 

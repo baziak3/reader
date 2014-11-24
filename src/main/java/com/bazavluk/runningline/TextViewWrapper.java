@@ -5,7 +5,7 @@ import android.text.Html;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.bazavluk.configuration.Configuration;
-import com.bazavluk.services.LookupService;
+import com.bazavluk.util.LS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class TextViewWrapper {
     private Context context;
     private String content;
     private int width;
-    private Configuration configuration = LookupService.get(Configuration.class);
+    private Configuration configuration = LS.get(Configuration.class);
 
     public TextViewWrapper(Context context) {
         this.context = context;
@@ -40,6 +40,7 @@ public class TextViewWrapper {
         wordMetas = new ArrayList<>();
         for (String word: words) {
             int offset = (int) textView.getPaint().measureText(partialContent.toString());
+            int width = (int) textView.getPaint().measureText(word);
             int charOffset = partialContent.length();
             Delay delay = Delay.NO;
             if (word.length() > 1) {
@@ -62,7 +63,7 @@ public class TextViewWrapper {
                     delay = Delay.EXCLAMATION;
                 }
             }
-            wordMetas.add(new WordMeta(word, delay, offset, charOffset));
+            wordMetas.add(new WordMeta(word, delay, offset, charOffset, width));
 
             partialContent.append(word).append(" ");
         }
@@ -89,10 +90,6 @@ public class TextViewWrapper {
         return wordMetas.get(wordIndex).getOffset();
     }
 
-    public Delay getWordDelay(int wordIndex) {
-        return wordMetas.get(wordIndex).getDelay();
-    }
-
     public TextViewWrapper shadowPreviousLine() {
         textView.setText(Html.fromHtml("<font color=\"" + configuration.getPreviousLineColor() + "\">" + content + "</font>"));
         return this;
@@ -117,28 +114,39 @@ public class TextViewWrapper {
         return this;
     }
 
-    /**
-    * Created by Папа on 29.09.14.
-    */
-    static class WordMeta {
+    public WordMeta getWordMeta(int wordIndex) {
+        if (wordIndex >= wordMetas.size()) {
+            return null;
+        } else {
+            return wordMetas.get(wordIndex);
+        }
+    }
+
+    public int wordsCount() {
+        return wordMetas.size();
+    }
+
+    public static class WordMeta {
         private String word;
         private Delay delay;
         private int offset;
         private int charOffset;
+        private int width;
 
-        public WordMeta(String word, Delay delay, int offset, int charOffset) {
+        public WordMeta(String word, Delay delay, int offset, int charOffset, int width) {
             this.word = word;
             this.delay = delay;
             this.offset = offset;
             this.charOffset = charOffset;
+            this.width = width;
         }
 
         public String getWord() {
             return word;
         }
 
-        public Delay getDelay() {
-            return delay;
+        public double getDelay() {
+            return delay.coefficient();
         }
 
         public int getOffset() {
@@ -147,6 +155,37 @@ public class TextViewWrapper {
 
         public int getCharOffset() {
             return charOffset;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+    }
+
+    /**
+     * Describes delays' coefficients.
+     * TODO move into the speed package.
+     */
+    static enum Delay {
+        NEW_LINE(2),
+        NO(1),
+        COMMA(1.5),
+        DOT(2),
+        DASH(1.5),
+        COLON(1.5),
+        SEMI_COLON(1.5),
+        QUESTION(2),
+        EXCLAMATION(2);
+
+        private double coefficient;
+
+        private Delay(double value) {
+            coefficient = value;
+        }
+
+        public double coefficient() {
+            // return coefficient > 1 ? coefficient * 3: coefficient;
+            return coefficient;
         }
     }
 }

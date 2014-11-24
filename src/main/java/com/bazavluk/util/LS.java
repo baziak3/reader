@@ -1,10 +1,15 @@
-package com.bazavluk.services;
+package com.bazavluk.util;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
-public class LookupService {
-    private static Map<Class, Object> objects = new HashMap<>();
+/**
+ * Simple DI
+ */
+public class LS {
+    private static Map<Class, Object> objects = new LinkedHashMap<>();
 
     public static void register(Object o) {
         register(o, o.getClass());

@@ -1,7 +1,10 @@
-package com.bazavluk.domain;
+package com.bazavluk.datasource;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import com.bazavluk.ui.ActivityReader;
+import com.bazavluk.util.Initializeable;
+import com.bazavluk.util.LS;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,14 +18,15 @@ import java.util.List;
  */
 public class BookFromAssetsFile implements Book {
     List<List<String>> lines = new ArrayList<>();
-    int currentLine = 10;
+    int currentLine = 3;
     int currentWord = 0;
 
-    public BookFromAssetsFile(Context context) {
-        AssetManager am = context.getAssets();
+    public BookFromAssetsFile() {
+        AssetManager am = LS.get(ActivityReader.class).getAssets();
         try {
             InputStream is = am.open("book.txt");
             // InputStream is = am.open("t.txt");
+            //InputStream is = am.open("short.txt");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line;
             while((line = reader.readLine()) != null) {

@@ -1,4 +1,4 @@
-package com.bazavluk.runningline.controls.joystick;
+package com.bazavluk.runningline.controls.speed;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,10 +11,12 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
 import com.bazavluk.R;
-import com.bazavluk.runningline.RunningTextThread;
-import com.bazavluk.services.LookupService;
+import com.bazavluk.runningline.controls.Control;
 
-public class JoystickController {
+public class Joystick implements Control {
+    SpeedRegulator speedRegulator;
+    JoystickThread joystickThread;
+
     public static final int STICK_NONE = 0;
     public static final int STICK_UP = 1;
     public static final int STICK_UPRIGHT = 2;
@@ -43,7 +45,10 @@ public class JoystickController {
 
     private boolean touch_state = false;
 
-    public JoystickController(ViewGroup view, int stick_res_id) {
+    public Joystick(SpeedRegulator speedRegulator, ViewGroup view) {
+        this.speedRegulator = speedRegulator;
+
+        joystickThread = new JoystickThread();
 
         // TODO: remove
         ViewGroup parent = (ViewGroup) view.getParent();
@@ -56,7 +61,7 @@ public class JoystickController {
 
         stick = BitmapFactory.decodeResource(
                 mContext.getResources(),
-                stick_res_id);
+                R.drawable.image_button);
 
         stick_width = stick.getWidth();
         stick_height = stick.getHeight();
@@ -74,36 +79,29 @@ public class JoystickController {
         this.setMinimumDistance(50);
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View arg0, MotionEvent arg1) {
-                JoystickController.this.drawStick(arg1);
+                Joystick.this.drawStick(arg1);
 
                 // TODO: remove
-                getX.setText(String.valueOf(JoystickController.this.getX()));
-                getY.setText(String.valueOf(JoystickController.this.getY()));
+                getX.setText(String.valueOf(Joystick.this.getX()));
+                getY.setText(String.valueOf(Joystick.this.getY()));
                 // EOF remove
 
-                if (JoystickController.this.isInTouchState()) {
-                    startRunningLine();
+                if (Joystick.this.isInTouchState()) {
+                    Joystick.this.speedRegulator.startRunningLine();
                 } else {
-                    stopRunningLine();
+                    Joystick.this.speedRegulator.stopRunningLine();
                 }
 
-                if (JoystickController.this.getY() == 0) {
-                    LookupService.get(JoystickThread.class).suspendThread();
+                if (Joystick.this.getY() == 0) {
+                    joystickThread.suspendThread();
                 } else {
-                    LookupService.get(JoystickThread.class).setJoystickY(JoystickController.this.getY());
-                    LookupService.get(JoystickThread.class).resumeThread();
+                    joystickThread.setJoystickY(Joystick.this.getY());
+                    joystickThread.resumeThread();
                 }
                 return true;
             }
         });
-    }
-
-    private void stopRunningLine() {
-        LookupService.get(RunningTextThread.class).suspendThread();
-    }
-
-    private void startRunningLine() {
-        LookupService.get(RunningTextThread.class).resumeThread();
+        joystickThread.start();
     }
 
     public void drawStick(MotionEvent arg1) {
@@ -324,6 +322,72 @@ public class JoystickController {
         private void position(float pos_x, float pos_y) {
             x = pos_x - (stick_width / 2);
             y = pos_y - (stick_height / 2);
+        }
+    }
+
+    private class JoystickThread extends Thread {
+        private boolean suspended = true;
+        private boolean stopped = false;
+        private int joystickY;
+
+        public void run() {
+            // LS.get(SpeedRegulatorThread.class).updateSpeed();
+            do {
+
+                if (joystickY < 0) {
+                    speedRegulator.speedUpRunningLine();
+                } else if (joystickY > 0) {
+                    speedRegulator.speedDownRunningLine();
+                }
+
+                // wait for calculated time
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                // wait while suspended
+                try {
+                    synchronized (this) {
+                        while (suspended) {
+                            wait();
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                // break if stopped
+                synchronized (this) {
+                    if (stopped) {
+                        break;
+                    }
+                }
+            } while (true);
+        }
+
+        public void suspendThread() {
+            suspended = true;
+        }
+
+        public void resumeThread() {
+            synchronized (this) {
+                suspended = false;
+                notify();
+            }
+        }
+
+        public synchronized void stopThread() {
+            stopped = true;
+        }
+
+        public void setJoystickY(int joystickY) {
+            this.joystickY = joystickY;
+        }
+
+        public int getJoystickY() {
+            return joystickY;
         }
     }
 }
